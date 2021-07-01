@@ -2,30 +2,46 @@
 
 # Fetches net charge and customer reference from a fedex excel sheet.
 
-# TODO find a way to convert to .xlsx with python
-import pprint, openpyxl, os
+#  Imports
+import pprint, openpyxl, os, time
 from openpyxl.cell.read_only import EmptyCell
-
+from selenium import webdriver
 from openpyxl import cell
 from openpyxl.utils.cell import get_column_letter
+from selenium.webdriver.common import keys
+from selenium.webdriver.common.by import By
+from xls2xlsx import XLS2XLSX
 
-# Change to appropriate dir
-os.chdir(r'C:\Users\Gaming\Google Drive\Code\Python\My Stuff\Fedex Sheets')
+
+
+
+
+# TODO handle the directory to target users Documents
+
+# Create a folder called FedexData and change the cwd to that folder.
+myDir = f'{os.environ["USERPROFILE"]}\\Documents\\FedexData'
+if not os.path.isdir(myDir):
+    os.mkdir(myDir)
+os.chdir(myDir)
+
 # print(os.getcwd())
 
+
 # Create the workspace and worksheet
-wb = openpyxl.load_workbook('fedex.xlsx')
+x2x = XLS2XLSX("fedex.xls")
+wb = x2x.to_xlsx()
+# wb = openpyxl.load_workbook('fedex.xlsx')
 sheet = wb.worksheets[0]
 
-# Create 2 dictionaries, One that has the data we need all ready to go,
-# and another to store the rows we need to look up data for manually.
+# Create 3 lists that are used for storing the different outputs given to the user
 complete_data = []
 incomplete_data = []
 service_charge = []
 
+# Convert the tuple given by sheet.rows to a list so we can subscript with it.
 list_of_rows = list(sheet.rows)
-# Get the correct column for Net Charge Amount
 
+# Get the column for each piece of data we need.
 for cellObj in list_of_rows[0]:
     if(str(cellObj.value) == 'Net Charge Amount'):
         net_charge_column = cellObj.column # K Stores the column NUMBER for Net Charge
@@ -40,13 +56,11 @@ for cellObj in list_of_rows[0]:
     elif(str(cellObj.value) == 'Recipient City'):
         recipient_city = cellObj.column # AK
 
-# for cell in list(sheet.columns)[net_charge_column]:
-#     if not cell.row == 1:
-#         print(f'on cell row {cell.row}: {cell.value}')
 
 # Go through each column getting the necessary info, ignoring the entire row if column a is blank
 # IF all required info exists, we append it as a list to  the list complete_data. If it doesnt have the necessary data we append it as a list to the list with
-# AZ + AG + AK so the information can be processed and reviewed by the user.
+# AZ (if AZ exists) + AG + AK so the information can be processed and reviewed by the user. If neither K+AW+AY or K+AG+AK exist we assume
+# it must be the service charge and store it as such.
 
 for i in range(2, sheet.max_column + 1):
         if(sheet['A'+ str(i)].value):
@@ -77,15 +91,6 @@ for i in range(2, sheet.max_column + 1):
                 new_list.append(f'Service Charge Amount: {ncm}')
                 service_charge.append(new_list)
 
-# pprint.pprint(complete_data)
-# print('\n')
-# pprint.pprint(incomplete_data)
-data_file = open('fedexData.txt', 'w')
-# data_file.write(pprint.pformat(complete_data))
-# data_file.write('\n' * 5 )
-# data_file.write(pprint.pformat(incomplete_data))
-# TODO 
-
 def printData(list):
     str = ''
     for items in list:
@@ -93,6 +98,9 @@ def printData(list):
             str += (item) + '\n'
     return str
 
+# Writes the data to the text file using our printData function.
+# TODO if the data needs to be kept, create a naming system for the txt files
+data_file = open('fedexData.txt', 'w')
 data_file.write('THE FOLLOWING ORDERS WERE PRODUCED FROM COMPLETE DATA\n' + '_' * 50 + '\n' * 3)
 data_file.write(printData(complete_data))
 data_file.write(('\n' * 5) + (('*' * 50) + ('\n'))*3)
@@ -102,7 +110,3 @@ data_file.write(('\n' * 5) + (('*' * 50) + ('\n'))*3)
 data_file.write('THE FOLLOWING IS THE INCLUDED SERVICE CHARGE\n' + '_' * 50 + '\n' * 3)
 data_file.write(printData(service_charge))
 data_file.close()
-
-# TODO change order to PO, Price, Name
-# Print out incomplete_data
-# Print service charge(s) at end with row number
