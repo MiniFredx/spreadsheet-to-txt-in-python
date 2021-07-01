@@ -5,11 +5,8 @@
 #  Imports
 import pprint, openpyxl, os, time
 from openpyxl.cell.read_only import EmptyCell
-from selenium import webdriver
 from openpyxl import cell
 from openpyxl.utils.cell import get_column_letter
-from selenium.webdriver.common import keys
-from selenium.webdriver.common.by import By
 from xls2xlsx import XLS2XLSX
 
 

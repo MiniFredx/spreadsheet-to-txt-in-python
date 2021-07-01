@@ -1,1 +1,5 @@
 fedexData.txt
+__pycache__/
+build/
+dist/
+fedex.spec
