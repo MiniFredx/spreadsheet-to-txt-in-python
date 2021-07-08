@@ -13,7 +13,6 @@ from xls2xlsx import XLS2XLSX
 
 
 
-# TODO handle the directory to target users Documents
 
 # Create a folder called FedexData and change the cwd to that folder.
 myDir = f'{os.environ["USERPROFILE"]}\\Documents\\FedexData'
@@ -21,8 +20,14 @@ if not os.path.isdir(myDir):
     os.mkdir(myDir)
 os.chdir(myDir)
 
-# print(os.getcwd())
+number = 1
 
+while True:
+    textFileName = 'fedexData' + '_' + str(number) + '.txt'
+
+    if not os.path.exists(textFileName):
+        break
+    number = number + 1
 
 # Create the workspace and worksheet
 x2x = XLS2XLSX("fedex.xls")
@@ -97,7 +102,7 @@ def printData(list):
 
 # Writes the data to the text file using our printData function.
 # TODO if the data needs to be kept, create a naming system for the txt files
-data_file = open('fedexData.txt', 'w')
+data_file = open(textFileName, 'w')
 data_file.write('THE FOLLOWING ORDERS WERE PRODUCED FROM COMPLETE DATA\n' + '_' * 50 + '\n' * 3)
 data_file.write(printData(complete_data))
 data_file.write(('\n' * 5) + (('*' * 50) + ('\n'))*3)
